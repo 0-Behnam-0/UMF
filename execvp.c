@@ -6,13 +6,12 @@
 int main() {
     char command[100];  // Buffer to hold the user input command
     printf("Enter a command: ");
-    fgets(command, sizeof(command), stdin);
-
-    // Remove trailing newline character from the command
-    command[strcspn(command, "\n")] = '\0';
+    fgets(command, sizeof(command), stdin); // User input
+    
+    command[strcspn(command, "\n")] = '\0';  // Remove newline character from the command
 
     char * token;  // Split the command into tokens based on spaces
-    const int arg_max = 5;  // Set maximum arg size which is readable only
+    const int arg_max = 20;  // Set maximum arg size which is readable only
     char * args[arg_max];  // Maximum arguments excluding the command itself
 
     int i = 0;
