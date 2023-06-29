@@ -9,7 +9,7 @@ int main()
     printf("Enter a command: ");
     fgets(command, sizeof(command), stdin); // User input
 
-    command[strcspn(command, "\n")] = '\0'; // Remove newline character from the command
+    command[strcspn(command, "\n")] = '\0'; // Remove newline character from the command('\n' will replaced with '\0')
 
     char *token;            // Split the command into tokens based on spaces
     const int arg_max = 20; // Set maximum arg size which is readable only
@@ -36,9 +36,18 @@ int main()
     }
     printf("\n");
 
-    execvp(args[0], args); // Execute the command
+    if (strcmp(command, "cd") == 0)
+    {
+        const char * path = args[1];
+        int is_path_valid = chdir(path);  // checking weather the path is valid or not
 
-    perror("execvp"); // Print an error message if execvp fails
+    }
+    else
+    {
+        execvp(command, args); // Execute the command
+
+        perror("execvp"); // Print an error message if execvp fails
+    }
 
     return 0;
 }
