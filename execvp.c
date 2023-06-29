@@ -1,33 +1,3 @@
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <unistd.h>
-// #include <sys/wait.h> // for wait syntax
-
-
-// int main() {
-//     char* command = "pwd";
-//     char* args[] = {"pwd", NULL};
-
-//     int pid = fork();  // Create a child process
-
-//     if (pid == 0) {
-//         // Child process
-//         execvp(command, args);  // Execute the command
-//         perror("execvp");  // Print an error message if execvp fails
-//         exit(EXIT_FAILURE);
-//     } else if (pid > 0) {
-//         // Parent process
-//         wait(NULL);  // Wait for the child process to complete
-//     } else {
-//         // Forking failed
-//         perror("fork");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     return 0;
-// }
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,20 +11,32 @@ int main() {
     // Remove trailing newline character from the command
     command[strcspn(command, "\n")] = '\0';
 
-    // Split the command into tokens based on spaces
-    char* token;
-    char* args[20];  // Maximum 20 arguments including the command itself
-    int i = 0;
+    char * token;  // Split the command into tokens based on spaces
+    const int arg_max = 5;  // Set maximum arg size which is readable only
+    char * args[arg_max];  // Maximum arguments excluding the command itself
 
-    token = strtok(command, " ");
-    while (token != NULL && i < 19) {
+    int i = 0;
+    token = strtok(command, " ");  // First element of command parsed into token
+    while (token != NULL && i < arg_max+1) {
         args[i++] = token;
         token = strtok(NULL, " ");
     }
+
     args[i] = NULL;  // Set the last element to NULL
+    /*
+    Warning: Ignoring this line of code cause the pointer moves into inaccessible memory address,
+     and finally 'Bad address' error will be rised!
+    */
+
+    printf("args = ");  // printing the user's input
+    for (int j = 0; j < i; j++) {
+        printf("%s ", args[j]);
+    }
+    printf("\n");
 
     execvp(args[0], args);  // Execute the command
 
     perror("execvp");  // Print an error message if execvp fails
+
     return 0;
 }
