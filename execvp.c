@@ -56,7 +56,7 @@ int main()
         if (strcasecmp(command, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
-            // sleep(1);git 
+            // sleep(1);
             printf("\033[2J");
             break;
         }
@@ -69,6 +69,13 @@ int main()
                 printf("Failed to change directory\n");
             }
             continue;
+        }
+        else if (strcasecmp(command, "globalusage") == 0) // Programmer info
+        {
+            printf("+--------------------------------------------+\n");
+            printf("¦ Uncomplicated Microterminal Framework(UMF) ¦\n");
+            printf("¦ by Mahdi Mohamadiha.                       ¦\n");
+            printf("+--------------------------------------------+\n");
         }
         else // This statement created to prevent closing program when external commands are enterd
         {
