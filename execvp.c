@@ -11,7 +11,7 @@ int main()
     char HOSTNAME[256];
     gethostname(HOSTNAME, sizeof(HOSTNAME)); // Store hostname
 
-    char command[100]; // Buffer to hold the user input command
+    char COMMAND[100];    // Buffer to hold the user input command
     do
     {
         char calcwd[1000];                               // Buffer to hold the calculate current working directory(calcwd)
@@ -29,9 +29,9 @@ int main()
             perror("Error(getcwd)");
         }
 
-        fgets(command, sizeof(command), stdin); // User input
-        command[strcspn(command, "\n")] = '\0'; // Remove newline character from the command('\n' will replaced with '\0')
-        if (strlen(command) == 0)               // Skiping empty inputs
+        fgets(COMMAND, sizeof(COMMAND), stdin); // User input
+        COMMAND[strcspn(COMMAND, "\n")] = '\0'; // Remove newline character from the command('\n' will replaced with '\0')
+        if (strlen(COMMAND) == 0)               // Skiping empty inputs
         {
             continue;
         }
@@ -40,7 +40,7 @@ int main()
         char *args[MAX_ARG]; // Maximum arguments excluding the command itself
 
         int i = 0;
-        token = strtok(command, " "); // First element of input parsed into token
+        token = strtok(COMMAND, " "); // First element of input parsed into token
         while (token != NULL && i < MAX_ARG + 1)
         {
             args[i++] = token;
@@ -53,14 +53,16 @@ int main()
          and finally 'Bad address' error will be rised!
         */
 
-        if (strcasecmp(command, "exit") == 0) // Check for exiting input
+        char *last_arg = args[i - 1]; // Get the last argument of input
+
+        if (strcasecmp(COMMAND, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
             // sleep(1);
             printf("\033[2J");
             break;
         }
-        else if (strcasecmp(command, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
+        else if (strcasecmp(COMMAND, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
         {
             const char *path = args[1];
             int is_path_valid = chdir(path); // Checking weather the path is valid or not
@@ -70,28 +72,45 @@ int main()
             }
             continue;
         }
-        else if (strcasecmp(command, "globalusage") == 0) // Programmer info
+        else if (strcasecmp(COMMAND, "globalusage") == 0) // Programmer info
         {
             printf("+--------------------------------------------+\n");
             printf("¦ Uncomplicated Microterminal Framework(UMF) ¦\n");
             printf("¦ by Mahdi Mohamadiha.                       ¦\n");
             printf("+--------------------------------------------+\n");
         }
-        else // This statement created to prevent closing program when external commands are enterd
+        else // This statement created to prevent closing program when external commands are entered
         {
             pid_t process_id = fork(); // Create a new process insed the program with pid stored in 'process_id' via pid_t
-            if (process_id == 0)
+
+            if (process_id == 0) // Child process
             {
-                execvp(command, args); // Execute the command
+                execvp(COMMAND, args); // Execute the command
                 perror("Error(exec)"); // Print an error message if execvp fails
-                exit(1);               // Kill the child if error rised
+                exit(EXIT_FAILURE);    // Kill the child if error rised
             }
-            else if (process_id > 0)
+            else if (process_id > 0) // Parent process
             {
-                int status;
-                wait(&status); // Wait for the child process to complete
+                if (strcmp(last_arg, "&") != 0)
+                {
+                    int status;
+                    waitpid(process_id, &status, 0);
+
+                    if (WIFEXITED(status)) // Check the child process finished normally or not
+                    {
+                        printf("Process %d succeeded\n", process_id);
+                    }
+                    else
+                    {
+                        printf("Process %d failed\n", process_id);
+                    }
+                }
+                else
+                {
+                    printf("Background process started with PID %d\n", process_id);
+                }
             }
-            else
+            else // Fork failing
             {
                 perror("Error(fork)"); // If creating new process via fork falis, error will be printed
             }
