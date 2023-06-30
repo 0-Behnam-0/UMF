@@ -6,6 +6,11 @@
 
 int main()
 {
+    const int MAX_ARG = 20; // Set maximum arg size which is readable only
+    char *USENAME = getenv("USER");
+    char HOSTNAME[256];
+    gethostname(HOSTNAME, sizeof(HOSTNAME)); // Store hostname
+
     char command[100]; // Buffer to hold the user input command
     do
     {
@@ -13,11 +18,11 @@ int main()
         char *dir_path = getcwd(calcwd, sizeof(calcwd)); // Get the path and store into 'dir_path'
         if (dir_path != NULL)                            // Handling path errors
         {
-            printf("%s $ ", dir_path);
+            printf("(%s@%s)-[~%s] $ ", USENAME, HOSTNAME, dir_path);
         }
         else if (dir_path == NULL)
         {
-            printf("[NULL] $ ");
+            printf("(%s@%s)-[NULL] $ ", USENAME, HOSTNAME);
         }
         else
         {
@@ -27,13 +32,12 @@ int main()
 
         command[strcspn(command, "\n")] = '\0'; // Remove newline character from the command('\n' will replaced with '\0')
 
-        char *token;            // Split the command into tokens based on spaces
-        const int arg_max = 20; // Set maximum arg size which is readable only
-        char *args[arg_max];    // Maximum arguments excluding the command itself
+        char *token;         // Split the command into tokens based on spaces
+        char *args[MAX_ARG]; // Maximum arguments excluding the command itself
 
         int i = 0;
         token = strtok(command, " "); // First element of input parsed into token
-        while (token != NULL && i < arg_max + 1)
+        while (token != NULL && i < MAX_ARG + 1)
         {
             args[i++] = token;
             token = strtok(NULL, " ");
@@ -48,7 +52,7 @@ int main()
         if (strcasecmp(command, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
-            sleep(1);
+            // sleep(1);
             printf("\033[2J");
             break;
         }
