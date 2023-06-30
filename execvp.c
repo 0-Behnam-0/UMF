@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 int main()
 {
@@ -18,7 +19,7 @@ int main()
         char *args[arg_max];    // Maximum arguments excluding the command itself
 
         int i = 0;
-        token = strtok(command, " "); // First element of command parsed into token
+        token = strtok(command, " "); // First element of input parsed into token
         while (token != NULL && i < arg_max + 1)
         {
             args[i++] = token;
@@ -38,12 +39,16 @@ int main()
         }
         printf("\n");
 
-        if (strcmp(command, "cd") == 0)
+        if (strcasecmp(command, "exit") == 0) // Check for exiting input
+        {
+            break;
+        }
+        if (strcasecmp(command, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
         {
             const char *path = args[1];
             int is_path_valid = chdir(path); // Checking weather the path is valid or not
 
-            if (is_path_valid == 0) 
+            if (is_path_valid == 0)
             {
                 printf("path = %s\n", path);
             }
@@ -52,13 +57,26 @@ int main()
                 printf("Failed to change directory\n");
             }
         }
-        else
+        else // This statement created to prevent closing program when external commands are enterd
         {
-            execvp(command, args); // Execute the command
-
-            perror("execvp"); // Print an error message if execvp fails
+            pid_t process_id = fork(); // Create a new process insed the program with pid stored in 'process_id' via pid_t
+            if (process_id == 0)
+            {
+                execvp(command, args); // Execute the command
+                perror("execvp");      // Print an error message if execvp fails
+                exit(1);               // Kill the child if error rised
+            }
+            else if (process_id > 0)
+            {
+                int status;
+                wait(&status); // Wait for the child process to complete
+            }
+            else
+            {
+                perror("fork"); // If creating new process via fork falis, error will be printed
+            }
         }
-    } while (strcmp(command, "exit") != 0);
+    } while (1); // Keep the program alive
 
     return 0;
 }
