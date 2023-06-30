@@ -8,10 +8,10 @@ int main()
 {
     const int MAX_ARG = 20; // Set maximum arg size which is readable only
     char *USENAME = getenv("USER");
-    char HOSTNAME[256];
+    char HOSTNAME[100];
     gethostname(HOSTNAME, sizeof(HOSTNAME)); // Store hostname
 
-    char COMMAND[100];    // Buffer to hold the user input command
+    char COMMAND[100]; // Buffer to hold the user input command
     do
     {
         char calcwd[1000];                               // Buffer to hold the calculate current working directory(calcwd)
@@ -70,7 +70,6 @@ int main()
             {
                 printf("Failed to change directory\n");
             }
-            continue;
         }
         else if (strcasecmp(COMMAND, "globalusage") == 0) // Programmer info
         {
@@ -96,11 +95,7 @@ int main()
                     int status;
                     waitpid(process_id, &status, 0);
 
-                    if (WIFEXITED(status)) // Check the child process finished normally or not
-                    {
-                        printf("Process %d succeeded\n", process_id);
-                    }
-                    else
+                    if (!WIFEXITED(status)) // Check the child process finished normally or not
                     {
                         printf("Process %d failed\n", process_id);
                     }
