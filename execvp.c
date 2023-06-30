@@ -28,9 +28,13 @@ int main()
         {
             perror("Error(getcwd)");
         }
-        fgets(command, sizeof(command), stdin); // User input
 
+        fgets(command, sizeof(command), stdin); // User input
         command[strcspn(command, "\n")] = '\0'; // Remove newline character from the command('\n' will replaced with '\0')
+        if (strlen(command) == 0)               // Skiping empty inputs
+        {
+            continue;
+        }
 
         char *token;         // Split the command into tokens based on spaces
         char *args[MAX_ARG]; // Maximum arguments excluding the command itself
@@ -52,11 +56,11 @@ int main()
         if (strcasecmp(command, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
-            // sleep(1);
+            // sleep(1);git 
             printf("\033[2J");
             break;
         }
-        if (strcasecmp(command, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
+        else if (strcasecmp(command, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
         {
             const char *path = args[1];
             int is_path_valid = chdir(path); // Checking weather the path is valid or not
@@ -64,6 +68,7 @@ int main()
             {
                 printf("Failed to change directory\n");
             }
+            continue;
         }
         else // This statement created to prevent closing program when external commands are enterd
         {
