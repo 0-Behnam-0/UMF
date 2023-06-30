@@ -55,6 +55,25 @@ int main()
 
         char *last_arg = args[i - 1]; // Get the last argument of input
 
+        int redirect_flag = 0;
+        for (int cnt = 0; cnt < i; cnt++)
+        {
+            if (strcmp(args[cnt], ">") == 0)
+            {
+                redirect_flag = 1;
+                for (int ele = cnt - 1; ele > -1; ele--) // Original stdout
+                {
+                    printf("o: %s\n", args[ele]);
+                }
+                printf("--------\n");
+                for (int ele = cnt + 1; ele < i; ele++) // File name
+                {
+                    printf("f: %s\n", args[ele]);
+                }
+            }
+        }
+        printf("redirect_flag = %d\n", redirect_flag);
+
         if (strcasecmp(COMMAND, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
