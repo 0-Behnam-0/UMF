@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 int main()
 {
@@ -56,29 +57,28 @@ int main()
         char *last_arg = args[i - 1]; // Get the last argument of input
 
         int redirect_flag = 0;
+        char *redirect_src[100]; // Redirect source list
+        char *redirect_dst;      // Redirect destination
+
         for (int cnt = 0; cnt < i; cnt++)
         {
             if (strcmp(args[cnt], ">") == 0)
             {
                 redirect_flag = 1;
-                for (int ele = cnt - 1; ele > -1; ele--) // Original stdout
+                for (int ele = 0; ele < cnt; ele++) // Original stdout
                 {
-                    printf("o: %s\n", args[ele]);
+                    redirect_src[ele] = args[ele];
                 }
-                printf("--------\n");
-                for (int ele = cnt + 1; ele < i; ele++) // File name
-                {
-                    printf("f: %s\n", args[ele]);
-                }
+                redirect_src[cnt] = NULL;
+                redirect_dst = args[cnt + 1];
+                redirect_flag = 1;
             }
         }
-        printf("redirect_flag = %d\n", redirect_flag);
 
         if (strcasecmp(COMMAND, "exit") == 0) // Check for exiting input
         {
             printf("Exiting...\n");
             // sleep(1);
-            printf("\033[2J");
             break;
         }
         else if (strcasecmp(COMMAND, "cd") == 0) // 'strcasecmp' is the same as 'strcmp' but it ignores the cases
@@ -97,9 +97,46 @@ int main()
             printf("¦ by Mahdi Mohamadiha.                       ¦\n");
             printf("+--------------------------------------------+\n");
         }
+        else if (redirect_flag == 1)
+        {
+            int saved_stdout = dup(STDOUT_FILENO); // Save the original stdout file descriptor
+            int fd;
+
+            // Open or create the file in append mode
+            fd = open(redirect_dst, O_WRONLY | O_CREAT | O_APPEND, 0644);
+            if (fd == -1)
+            {
+                perror("Error opening file");
+                return 1;
+            }
+
+            // Redirect stdout to the file
+            if (dup2(fd, STDOUT_FILENO) == -1)
+            {
+                perror("Error redirecting output");
+                return 1;
+            }
+
+            // Execute the command
+            system(COMMAND);
+
+            // Restore the original stdout
+            if (dup2(saved_stdout, STDOUT_FILENO) == -1)
+            {
+                perror("Error restoring output");
+                return 1;
+            }
+
+            close(saved_stdout);
+            if (COMMAND[0] == '>' && COMMAND[1] != '\0')
+            {
+                close(fd);
+            }
+        }
+
         else // This statement created to prevent closing program when external commands are entered
         {
-            pid_t process_id = fork(); // Create a new process insed the program with pid stored in 'process_id' via pid_t
+            pid_t process_id = fork(); // Create two processes: one parent and one child which both run in different dimensions parallelly
 
             if (process_id == 0) // Child process
             {
