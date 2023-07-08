@@ -40,27 +40,27 @@ int main()
         char *token;         // Split the command into tokens based on spaces
         char *args[MAX_ARG]; // Maximum arguments excluding the command itself
 
-        int i = 0;
+        int index = 0;
         token = strtok(COMMAND, " "); // First element of input parsed into token
-        while (token != NULL && i < MAX_ARG + 1)
+        while (token != NULL && index < MAX_ARG + 1)
         {
-            args[i++] = token;
+            args[index++] = token;
             token = strtok(NULL, " ");
         }
 
-        args[i] = NULL; // Set the last element to NULL
+        args[index] = NULL; // Set the last element to NULL
         /*
         Warning: Ignoring this line of code cause the pointer moves into inaccessible memory address,
          and finally 'Bad address' error will be rised!
         */
 
-        char *last_arg = args[i - 1]; // Get the last argument of input
+        char *last_arg = args[index - 1]; // Get the last argument of input
 
         int redirect_flag = 0;
         char *redirect_src[100]; // Redirect source list
         char *redirect_dst;      // Redirect destination
 
-        for (int cnt = 0; cnt < i; cnt++)
+        for (int cnt = 0; cnt < index; cnt++)
         {
             if (strcmp(args[cnt], ">") == 0)
             {
@@ -140,6 +140,10 @@ int main()
 
             if (process_id == 0) // Child process
             {
+                if (strcmp(last_arg, "&") == 0) // Removes background modifier symbol
+                {
+                    args[index - 1] = NULL;
+                }
                 execvp(COMMAND, args); // Execute the command
                 perror("Error(exec)"); // Print an error message if execvp fails
                 exit(EXIT_FAILURE);    // Kill the child if error rised
@@ -149,7 +153,7 @@ int main()
                 if (strcmp(last_arg, "&") != 0)
                 {
                     int status;
-                    waitpid(process_id, &status, 0);
+                    waitpid(process_id, &status, 0); // Parent will not wait for child process
 
                     if (!WIFEXITED(status)) // Check the child process finished normally or not
                     {
@@ -158,7 +162,7 @@ int main()
                 }
                 else
                 {
-                    printf("Background process started with PID %d\n", process_id);
+                    printf("Background process started (PID: %d)\n", process_id);
                 }
             }
             else // Fork failing
